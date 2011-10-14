@@ -58,7 +58,7 @@ public class PhenomRemoteControlActivity extends Activity {
 		 * to the button
 		 */
 		mGetOperationalModeBtn.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				/*

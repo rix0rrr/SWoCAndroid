@@ -48,7 +48,7 @@ public class PhenomController {
 	private static final String WebServiceSoapAction = "";
 	private static final String WebServiceMethodName = "GetInstrumentMode"; //GetOperationalMode
 	private static final String WebServiceNameSpace  = "http://tempuri.org/om.xsd";
-	private static final String WebServiceUrl        = "http://192.168.5.133:8888/";			
+	private static final String WebServiceUrl        = "http://192.168.24.4:8888/";			
 	
 	private void GetInstrumentMode()
 	{	
