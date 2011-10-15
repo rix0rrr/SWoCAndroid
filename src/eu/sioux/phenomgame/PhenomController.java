@@ -72,18 +72,8 @@ public class PhenomController {
 	void retrieveLiveImage(final int nFrameDelay, final int nextState) {
 		doAsync(new Runnable() {
 			@Override
-<<<<<<< HEAD
-			protected Bitmap doInBackground(final Void... params) {
-				Map<String, Object> p = new HashMap<String, Object>() {/**
-					 * 
-					 */
-					private static final long serialVersionUID = -5464869152192426657L;
-
-				{
-=======
 			public void run() {
 				Map<String, Object> p = new HashMap<String, Object>() {{
->>>>>>> Kinda sorta complete ish
 					put("nFrameDelay", new Integer(nFrameDelay));
 				}};
 				
@@ -108,18 +98,8 @@ public class PhenomController {
 	void acquireImage(final String detector, final Integer widthHeight, final Integer nrOfFrames, final ImageView view) {
 		doAsync(new Runnable() {
 			@Override
-<<<<<<< HEAD
-			protected Bitmap doInBackground(Void... arg0) {
-				Map<String, Object> request = new HashMap<String, Object>() {/**
-					 * 
-					 */
-					private static final long serialVersionUID = 380923659616114021L;
-
-				{
-=======
 			public void run() {
 				Map<String, Object> request = new HashMap<String, Object>() {{
->>>>>>> Kinda sorta complete ish
 					put("scan", new SoapObject(PHENOM_NS, "scanParams") {{
 						put("det", detector);
 						put("res", new SoapObject(PHENOM_NS, "resolution") {{
@@ -176,18 +156,8 @@ public class PhenomController {
 	public void moveTo(final Point point, final int what) {
 		doAsync(new Runnable() {
 			@Override
-<<<<<<< HEAD
-			protected Void doInBackground(Void... params) {
-				performSoapRequest("MoveTo", new HashMap<String, Object>() {/**
-					 * 
-					 */
-					private static final long serialVersionUID = 4713190186170209628L;
-
-				{
-=======
 			public void run() {
 				performSoapRequest("MoveTo", new HashMap<String, Object>() {{
->>>>>>> Kinda sorta complete ish
 					put("aPos", new SoapObject(PHENOM_NS, "position") {{
 						addProperty("x", new Double(point.x));
 						addProperty("y", new Double(point.y));
@@ -203,18 +173,8 @@ public class PhenomController {
 	public void moveBy(final Point delta, final int what) {
 		doAsync(new Runnable() {
 			@Override
-<<<<<<< HEAD
-			protected Void doInBackground(Void... params) {
-				performSoapRequest("MoveBy", new HashMap<String, Object>() {/**
-					 * 
-					 */
-					private static final long serialVersionUID = -5650682529713266773L;
-
-				{
-=======
 			public void run() {
 				performSoapRequest("MoveBy", new HashMap<String, Object>() {{
->>>>>>> Kinda sorta complete ish
 					put("aPos", new SoapObject(PHENOM_NS, "position") {{
 						addProperty("x", new Double(delta.x));
 						addProperty("y", new Double(delta.y));
@@ -236,18 +196,8 @@ public class PhenomController {
 	public void setJog(final double vx, final double vy, final boolean fovCoordinates, final int nextStep) {
 		doAsync(new Runnable() {
 			@Override
-<<<<<<< HEAD
-			protected Void doInBackground(Void... params) {
-				performSoapRequest("Jog", new HashMap<String, Object>() {/**
-					 * 
-					 */
-					private static final long serialVersionUID = 711258811238765656L;
-
-				{
-=======
 			public void run() {
 				performSoapRequest("Jog", new HashMap<String, Object>() {{
->>>>>>> Kinda sorta complete ish
 					put("aSpeed", new SoapObject(PHENOM_NS, "jogVector") {{
 						addProperty("x", new Double(vx));
 						addProperty("y", new Double(vy));
