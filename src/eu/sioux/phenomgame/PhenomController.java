@@ -54,8 +54,29 @@ public class PhenomController {
 		this.statusHandler = statusHandler;
 	}
 
-	void retrieveLiveImage(Integer nFrameDelay, ImageView view) {
-		new RetrieveLiveImage(view).execute(nFrameDelay);
+	void retrieveLiveImage(final int nFrameDelay, final int nextState) {
+		new AsyncTask<Void, Void, Bitmap>() {
+			@Override
+			protected Bitmap doInBackground(final Void... params) {
+				Map<String, Object> p = new HashMap<String, Object>() {{
+					put("nFrameDelay", new Integer(nFrameDelay));
+				}};
+				
+				Vector soapResult = (Vector)performSoapRequest("SEMGetLiveImageCopy", p);
+				
+				byte[] bytes = Base64.decode(soapResult.get(0).toString());
+				SoapObject properties = (SoapObject)soapResult.get(1);
+				int width  = Integer.parseInt(properties.getProperty("width").toString());
+				int height = Integer.parseInt(properties.getProperty("height").toString());
+				
+				return makeBitmapFromGrayscale(bytes, width, height);				
+			}
+
+			@Override
+			protected void onPostExecute(Bitmap result) {
+				postback(nextState, result);
+			}
+		}.execute();
 	}
 	
 	void setStatus(String status) {
@@ -64,7 +85,6 @@ public class PhenomController {
 		statusHandler.sendMessage(m);
 	}
 		
-	/*
 	void acquireImage(final String detector, final Integer widthHeight, final Integer nrOfFrames, final ImageView view) {
 		new AsyncTask<Void, Void, Bitmap>() {
 
@@ -81,7 +101,7 @@ public class PhenomController {
 					}});
 				}};
 				
-				Vector soapResult = performSoapRequest("SEMAcquireImageCopy", request);
+				Vector soapResult = (Vector)performSoapRequest("SEMAcquireImageCopy", request);
 				
 				byte[] bytes = Base64.decode(soapResult.get(0).toString());
 				SoapObject properties = (SoapObject)soapResult.get(1);
@@ -100,7 +120,6 @@ public class PhenomController {
 			
 		}.execute();
 	}
-	*/
 	
 	private void postback(int what, Object obj) {
 		Message m = new Message();
@@ -168,6 +187,29 @@ public class PhenomController {
 				}});
 				
 				return null;
+			}
+			
+			@Override
+			protected void onPostExecute(Void result) {
+				postback(what, null);
+			}
+		}.execute();
+	}
+	
+	public void moveBy(final Point delta, final int what) {
+		new AsyncTask<Void, Void, Void>() {
+			@Override
+			protected Void doInBackground(Void... params) {
+				performSoapRequest("MoveBy", new HashMap<String, Object>() {{
+					put("aPos", new SoapObject(PHENOM_NS, "position") {{
+						addProperty("x", new Double(delta.x));
+						addProperty("y", new Double(delta.y));
+					}});
+					put("algorithm", NavigationAlgorithm.Raw);
+				}});
+				
+				return null;
+				
 			}
 			
 			@Override
@@ -246,43 +288,6 @@ public class PhenomController {
 			setStatus(e2.toString());
 			Log.e("soap", "Call failed", e2);
 			throw new RuntimeException(e2);
-		}
-	}
-	
-	private class RetrieveLiveImage extends AsyncTask<Object, Void, Bitmap> {
-		private ImageView imageView;
-		
-		public RetrieveLiveImage(ImageView imageView) {
-			this.imageView = imageView;
-		}
-
-		@Override
-		protected Bitmap doInBackground(final Object... params) {
-			Map<String, Object> p = new HashMap<String, Object>() {{
-				put("nFrameDelay", params[0]);
-			}};
-			
-			Vector soapResult = (Vector)performSoapRequest("SEMGetLiveImageCopy", p);
-			
-			LogSoapThingy(soapResult.get(0));
-			LogSoapThingy(soapResult.get(1));
-			LogSoapThingy(soapResult.get(2));
-			LogSoapThingy(soapResult.get(3));
-			
-			byte[] bytes = Base64.decode(soapResult.get(0).toString());
-			SoapObject properties = (SoapObject)soapResult.get(1);
-			int width = Integer.parseInt(properties.getProperty("width").toString());
-			int height = Integer.parseInt(properties.getProperty("height").toString());
-			
-			return makeBitmapFromGrayscale(bytes, width, height);				
-		}
-
-		@Override
-		protected void onPostExecute(Bitmap result) {
-			// Time to display that bitmap beyotches
-			if (result != null) {
-				imageView.setImageBitmap(result);
-			}
 		}
 	}
 	
