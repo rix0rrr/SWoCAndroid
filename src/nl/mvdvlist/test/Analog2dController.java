@@ -130,7 +130,7 @@ public class Analog2dController extends View {
 	
 	private void updateListeners() {
 		for (AnalogControlListener l : listeners) {
-			l.onPositionChanged(currentAngle, currentStrength);
+			l.onPositionChanged(dotPositionX/(double)controlSize, dotPositionY/(double)controlSize);
 		}
 	}
 	
