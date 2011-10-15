@@ -54,13 +54,13 @@ public class Analog2dController extends View {
 
 		outerBorderPaint = new Paint();
 		outerBorderPaint.setAntiAlias(true); 
-		outerBorderPaint.setColor(0xFFAAAAAA);
+		outerBorderPaint.setColor(0xFFFF0000);
 		outerBorderPaint.setStyle(Style.STROKE);
 		outerBorderPaint.setStrokeWidth(2.0f);
 		
 		dotPaint = new Paint();
 		dotPaint.setAntiAlias(true);
-		dotPaint.setColor(0xFFDDDDDD);
+		dotPaint.setColor(0xFFFF0000);
 		//for debug-lines:
 		dotPaint.setStyle(Style.FILL);
 		dotPaint.setTextSize(15);

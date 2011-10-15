@@ -53,10 +53,26 @@ public class PhenomController {
 		this.statusHandler = statusHandler;
 		this.myContext = context;
 	}
-
-	void retrieveLiveImage(final int nFrameDelay, final int nextState) {
-		new AsyncTask<Void, Void, Bitmap>() {
+	
+	void doAsync(final Runnable r) {
+		new Thread(new Runnable() {
+			
 			@Override
+			public void run() {
+				try {
+					r.run();					
+				} catch (Exception e) {
+					setStatus(e.toString());
+				}				
+			}
+		}).start();
+	}
+	
+	
+	void retrieveLiveImage(final int nFrameDelay, final int nextState) {
+		doAsync(new Runnable() {
+			@Override
+<<<<<<< HEAD
 			protected Bitmap doInBackground(final Void... params) {
 				Map<String, Object> p = new HashMap<String, Object>() {/**
 					 * 
@@ -64,6 +80,10 @@ public class PhenomController {
 					private static final long serialVersionUID = -5464869152192426657L;
 
 				{
+=======
+			public void run() {
+				Map<String, Object> p = new HashMap<String, Object>() {{
+>>>>>>> Kinda sorta complete ish
 					put("nFrameDelay", new Integer(nFrameDelay));
 				}};
 				
@@ -74,14 +94,9 @@ public class PhenomController {
 				int width  = Integer.parseInt(properties.getProperty("width").toString());
 				int height = Integer.parseInt(properties.getProperty("height").toString());
 				
-				return makeBitmapFromGrayscale(bytes, width, height);				
+				postback(nextState, makeBitmapFromGrayscale(bytes, width, height));				
 			}
-
-			@Override
-			protected void onPostExecute(Bitmap result) {
-				postback(nextState, result);
-			}
-		}.execute();
+		});
 	}
 	
 	void setStatus(String status) {
@@ -91,9 +106,9 @@ public class PhenomController {
 	}
 		
 	void acquireImage(final String detector, final Integer widthHeight, final Integer nrOfFrames, final ImageView view) {
-		new AsyncTask<Void, Void, Bitmap>() {
-
+		doAsync(new Runnable() {
 			@Override
+<<<<<<< HEAD
 			protected Bitmap doInBackground(Void... arg0) {
 				Map<String, Object> request = new HashMap<String, Object>() {/**
 					 * 
@@ -101,6 +116,10 @@ public class PhenomController {
 					private static final long serialVersionUID = 380923659616114021L;
 
 				{
+=======
+			public void run() {
+				Map<String, Object> request = new HashMap<String, Object>() {{
+>>>>>>> Kinda sorta complete ish
 					put("scan", new SoapObject(PHENOM_NS, "scanParams") {{
 						put("det", detector);
 						put("res", new SoapObject(PHENOM_NS, "resolution") {{
@@ -118,17 +137,9 @@ public class PhenomController {
 				int width = Integer.parseInt(properties.getProperty("width").toString());
 				int height = Integer.parseInt(properties.getProperty("height").toString());
 				
-				return makeBitmapFromGrayscale(bytes, width, height);				
+				view.setImageBitmap(makeBitmapFromGrayscale(bytes, width, height));				
 			}
-
-			@Override
-			protected void onPostExecute(Bitmap result) {
-				if (result != null) {
-					view.setImageBitmap(result);
-				}
-			}
-			
-		}.execute();
+		});
 	}
 	
 	private void postback(int what, Object obj) {
@@ -143,22 +154,17 @@ public class PhenomController {
 	 */
 	public void getStroke(final int what)
 	{
-		new AsyncTask<Void, Void, Stroke>() {
+		doAsync(new Runnable() {
 			@Override
-			protected Stroke doInBackground(Void... params) {
+			public void run() {
 				Vector result = (Vector)performSoapRequest("GetStageStroke", new HashMap<String, Object>());
 				
 				SoapObject semMin = (SoapObject)result.get(2);
 				SoapObject semMax = (SoapObject)result.get(3);
 				
-				return new Stroke(soapPoint(semMin), soapPoint(semMax));
+				postback(what, new Stroke(soapPoint(semMin), soapPoint(semMax)));
 			}
-			
-			@Override
-			protected void onPostExecute(Stroke result) {
-				postback(what, result);
-			}
-		}.execute();
+		});
 	}
 	
 	private Point soapPoint(SoapObject pt) {
@@ -167,26 +173,10 @@ public class PhenomController {
 				Double.parseDouble(pt.getProperty("y").toString()));
 	}
 	
-	public void getInstrumentMode(final TextView into)
-	{	
-		new AsyncTask<Void, Void, String>() {
-
-			@Override
-			protected String doInBackground(Void... params) {
-				Vector result = (Vector)performSoapRequest("GetInstrumentMode", new HashMap<String, Object>());
-				return (String)result.get(0).toString();
-			}
-
-			@Override
-			protected void onPostExecute(String result) {
-				into.setText(result);
-			}
-		}.execute();
-	}
-	
 	public void moveTo(final Point point, final int what) {
-		new AsyncTask<Void, Void, Void>() {
+		doAsync(new Runnable() {
 			@Override
+<<<<<<< HEAD
 			protected Void doInBackground(Void... params) {
 				performSoapRequest("MoveTo", new HashMap<String, Object>() {/**
 					 * 
@@ -194,26 +184,26 @@ public class PhenomController {
 					private static final long serialVersionUID = 4713190186170209628L;
 
 				{
+=======
+			public void run() {
+				performSoapRequest("MoveTo", new HashMap<String, Object>() {{
+>>>>>>> Kinda sorta complete ish
 					put("aPos", new SoapObject(PHENOM_NS, "position") {{
 						addProperty("x", new Double(point.x));
 						addProperty("y", new Double(point.y));
 					}});
 					put("algorithm", NavigationAlgorithm.Auto);
 				}});
-				
-				return null;
-			}
-			
-			@Override
-			protected void onPostExecute(Void result) {
+					
 				postback(what, null);
 			}
-		}.execute();
+		});
 	}
 	
 	public void moveBy(final Point delta, final int what) {
-		new AsyncTask<Void, Void, Void>() {
+		doAsync(new Runnable() {
 			@Override
+<<<<<<< HEAD
 			protected Void doInBackground(Void... params) {
 				performSoapRequest("MoveBy", new HashMap<String, Object>() {/**
 					 * 
@@ -221,6 +211,10 @@ public class PhenomController {
 					private static final long serialVersionUID = -5650682529713266773L;
 
 				{
+=======
+			public void run() {
+				performSoapRequest("MoveBy", new HashMap<String, Object>() {{
+>>>>>>> Kinda sorta complete ish
 					put("aPos", new SoapObject(PHENOM_NS, "position") {{
 						addProperty("x", new Double(delta.x));
 						addProperty("y", new Double(delta.y));
@@ -228,20 +222,21 @@ public class PhenomController {
 					put("algorithm", NavigationAlgorithm.Raw);
 				}});
 				
-				return null;
-				
-			}
-			
-			@Override
-			protected void onPostExecute(Void result) {
 				postback(what, null);
 			}
-		}.execute();
+		});
 	}
 	
-	public void setJog(final double vx, final double vy, final boolean siUnit, final int nextStep) {
-		new AsyncTask<Void, Void, Void>() {
+	/**
+	 * Set the jog
+	 * 
+	 * If fovCoordinates is true, vx and vy are a fraction of the FOV.
+	 * Otherwise, m/s?? 
+	 */
+	public void setJog(final double vx, final double vy, final boolean fovCoordinates, final int nextStep) {
+		doAsync(new Runnable() {
 			@Override
+<<<<<<< HEAD
 			protected Void doInBackground(Void... params) {
 				performSoapRequest("Jog", new HashMap<String, Object>() {/**
 					 * 
@@ -249,54 +244,43 @@ public class PhenomController {
 					private static final long serialVersionUID = 711258811238765656L;
 
 				{
+=======
+			public void run() {
+				performSoapRequest("Jog", new HashMap<String, Object>() {{
+>>>>>>> Kinda sorta complete ish
 					put("aSpeed", new SoapObject(PHENOM_NS, "jogVector") {{
 						addProperty("x", new Double(vx));
 						addProperty("y", new Double(vy));
 					}});
-					put("aSIPercFoV", new Boolean(siUnit));
+					put("aSIPercFoV", new Boolean(fovCoordinates));
 				}});
 				
-				return null;
-			}
-			
-			@Override
-			protected void onPostExecute(Void result) {
 				postback(nextStep, null);
 			}
-		}.execute();
+		});
 	}
 	
 	public void stop(final int nextStep) {
-		new AsyncTask<Void, Void, Void>() {
+		doAsync(new Runnable() {
 			@Override
-			protected Void doInBackground(Void... params) {
+			public void run() {
 				performSoapRequest("Stop", new HashMap<String, Object>());
-				return null;
+				postback(nextStep, null);
 			}
-			
-			@Override
-			protected void onPostExecute(Void result) {
-				postback(nextStep, result);
-			}
-		}.execute();		
+		});		
 	}
 	
 	public void getPosition(final int nextStep) {
-		new AsyncTask<Void, Void, Point>() {
+		doAsync(new Runnable() {
 			@Override
-			protected Point doInBackground(Void... params) {
+			public void run() {
 				Vector result = (Vector)performSoapRequest("GetStageModeAndPosition", new HashMap<String, Object>());
 				
 				SoapObject pos = (SoapObject)result.get(1);
 				
-				return soapPoint(pos);
+				postback(nextStep, soapPoint(pos));
 			}
-			
-			@Override
-			protected void onPostExecute(Point result) {
-				postback(nextStep, result);
-			}
-		}.execute();		
+		});		
 	}
 	
 	private String envelopeToString(SoapEnvelope envelope) {
@@ -349,7 +333,7 @@ public class PhenomController {
         new NavigationAlgorithm.Marshaller().register(soapEnvelope);
         soapEnvelope.setOutputSoapObject(request);
         
-        logLongString(envelopeToString(soapEnvelope));
+        //logLongString(envelopeToString(soapEnvelope));
         
         String url = "http://" +Preferences.getIpAddress(myContext) + ":" + Preferences.getPortNumber(myContext);
         HttpTransportSE hts = new HttpTransportSE(url);

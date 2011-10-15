@@ -20,11 +20,20 @@ import eu.sioux.phenomgame.PhenomController.Stroke;
 public class PhenomRemoteControlActivity extends Activity {
 	/** Called when the activity is first created. */
 	
-	private final double maxSpeed = 0.01;
+	private final double maxSpeed = 0.004;
+	private final boolean speedInFoVFraction = false;
+	
+	private final double significantJogDifferenceFrac = 0.05;
 
 	PhenomController phenomController = null;
 	private TextView statusLabel;
 	private ImageView currentImage;
+	private ImageView referenceImage;
+	private TextView xcoord;
+	private TextView ycoord;
+	
+	private double lastJogX;
+	private double lastJogY;
 	
 	private final int ST_STROKE = 1;
 	private final int ST_MOVING = 2;
@@ -35,10 +44,13 @@ public class PhenomRemoteControlActivity extends Activity {
 	private final int ST_HIDING = 7;
 	private final int ST_SMALLSTEP = 8;
 	private final int ST_LIVE = 9;
+	private final int ST_POSITION = 10;
 	
 	private Stroke stageStroke;
 	private Point searchPoint;
+	private Point currentPoint;
 	private boolean live = false;
+	private boolean updatingPosition = false;
 
 	final static String TAG = PhenomController.class.getSimpleName();
 	/*
@@ -63,17 +75,24 @@ public class PhenomRemoteControlActivity extends Activity {
 		 */
 		statusLabel    = (TextView)findViewById(R.id.statusLabel);
 		currentImage   = (ImageView)findViewById(R.id.currentImage);
-//		referenceImage = (ImageView)findViewById(R.id.referenceImage);
+  		referenceImage = (ImageView)findViewById(R.id.referenceImage);
+  		xcoord         = (TextView)findViewById(R.id.xcoord);
+  		ycoord         = (TextView)findViewById(R.id.ycoord);
 		
 		Analog2dController analog = (Analog2dController)findViewById(R.id.analogControl);
 		analog.addListener(new AnalogControlListener() {
 			@Override
 			public void onPositionChanged(double fx, double fy) {
-				if (Math.abs(fx) < 0.001 && Math.abs(fy) < 0.001)
+				if (Math.abs(fx) < 0.01 && Math.abs(fy) < 0.01)
 					phenomController.stop(-1);
-				else {
+				else if (Math.abs(fx - lastJogX) > significantJogDifferenceFrac || 
+						Math.abs(fy - lastJogY) > significantJogDifferenceFrac) {
+					
 					Log.i("poschange", fx + "," + fy);
-					phenomController.setJog(fx * maxSpeed, -fy * maxSpeed, false, -1);
+					phenomController.setJog(fx * maxSpeed, -fy * maxSpeed, speedInFoVFraction, -1);
+					
+					lastJogX = fx;
+					lastJogY = fy;
 				}
 			}
 		});
@@ -82,12 +101,25 @@ public class PhenomRemoteControlActivity extends Activity {
 	}
 	
 	public void startLive() {
-		live = true;
-		phenomController.retrieveLiveImage(1, ST_LIVE);
+		if (!live) {
+			live = true;
+			phenomController.retrieveLiveImage(1, ST_LIVE);
+		}
 	}
 	
 	public void stopLive() {
 		live = false;
+	}
+	
+	public void startUpdatingPosition() {
+		if (!updatingPosition) {
+			updatingPosition = true;
+			phenomController.getPosition(ST_POSITION);
+		}
+	}
+	
+	public void endUpdatingPosition() {
+		updatingPosition = false;
 	}
 	
 	public void newGameClick(View v) {
@@ -98,7 +130,8 @@ public class PhenomRemoteControlActivity extends Activity {
 
 	public void refreshClick(View v) {
 		// Begin with getting the Stroke, the state machine inside the handler does the rest
-		phenomController.retrieveLiveImage(1, ST_DISPLAY_IMAGE);
+		startLive();
+		startUpdatingPosition();
 	}
 	
 	public void settingsClick(View v) {
@@ -115,6 +148,39 @@ public class PhenomRemoteControlActivity extends Activity {
 		return new Point(
 				r.nextDouble() * dx + stageStroke.topLeft.x,
 				r.nextDouble() * dy + stageStroke.topLeft.y);
+	}
+	
+	private double distanceToSearchPointPx() {
+		if (currentPoint == null || searchPoint == null) return 1;
+		
+		double dx = currentPoint.x - searchPoint.x;
+		double dy = currentPoint.y - searchPoint.y;
+		return Math.sqrt(dx * dx + dy * dy);
+	}
+	
+	private double distanceToSearchPointFraction() {
+		if (stageStroke == null) return 1;
+		
+		return Math.min(distanceToSearchPointPx() / (stageStroke.bottomRight.x - stageStroke.topLeft.x), 1); 		
+	}
+	
+	private int interpolateColor(int one, int two, double fraction) {
+		
+		int r = (int)((one >> 16 & 0xFF) + ((two >> 16 & 0xFF) - (one >> 16 & 0xFF)) * fraction);
+		int b = (int)((one >>  8 & 0xFF) + ((two >>  8 & 0xFF) - (one >>  8 & 0xFF)) * fraction);
+		int g = (int)((one       & 0xFF) + ((two       & 0xFF) - (one       & 0xFF)) * fraction);
+		Log.i("bla", "one = " + one + " two = " + two + " r = " + r + " g = " + g + "b = " + b);
+		return b << 24 + g << 16 + r << 8 + 0xFF;
+	}
+	
+	private void updateCoordLabels() {
+		xcoord.setText("" + currentPoint.x);
+		ycoord.setText("" + currentPoint.y);
+		
+		int color = interpolateColor(0x00FF00, 0xFF0000, distanceToSearchPointFraction());
+		//xcoord.setTextColor(color);
+		xcoord.setText("" + color);
+		ycoord.setTextColor(color);
 	}
 	
 	Handler statusHandler = new Handler() {
@@ -136,7 +202,7 @@ public class PhenomRemoteControlActivity extends Activity {
 					break;
 					
 				case ST_HIDDEN_PIC_CAPPED:
-					//referenceImage.setImageBitmap((Bitmap)msg.obj);
+					referenceImage.setImageBitmap((Bitmap)msg.obj);
 					phenomController.moveTo(randomPoint(), ST_HIDING);
 					break;
 					
@@ -146,6 +212,7 @@ public class PhenomRemoteControlActivity extends Activity {
 					
 				case ST_PREPARE_GAME:
 					startLive();
+					startUpdatingPosition();
 					break;
 					
 				case ST_DISPLAY_IMAGE:
@@ -159,6 +226,12 @@ public class PhenomRemoteControlActivity extends Activity {
 				case ST_LIVE:
 					currentImage.setImageBitmap((Bitmap)msg.obj);
 					if (live) phenomController.retrieveLiveImage(1, ST_LIVE);
+					break;
+					
+				case ST_POSITION:
+					currentPoint = (Point)msg.obj;
+					updateCoordLabels();
+					if (updatingPosition) phenomController.getPosition(ST_POSITION);
 					break;
 			
 				case 0:
