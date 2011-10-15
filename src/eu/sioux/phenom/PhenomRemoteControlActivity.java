@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 public class PhenomRemoteControlActivity extends Activity {
@@ -68,8 +69,13 @@ public class PhenomRemoteControlActivity extends Activity {
 				phenomController.getOperationalMode();
 			}
 		});
-		
 	}
+	
+	public void clickGetLiveImage(View v) {
+		ImageView i = (ImageView)findViewById(R.id.imageView);
+		phenomController.retrieveLiveImage(i);
+	}
+	
 	/*
 	 * this is the message handler that we passed on to the PhenomController object.
 	 * It will send messages when it has new data. It doesn't matter from which thread

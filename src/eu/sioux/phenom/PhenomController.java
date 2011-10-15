@@ -1,17 +1,24 @@
 package eu.sioux.phenom;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Vector;
 
+import org.kobjects.base64.Base64;
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapPrimitive;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
+import org.xmlpull.v1.XmlPullParserException;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.widget.ImageView;
 
 /*
  * This class handles the logic when the user presses the
@@ -44,6 +51,10 @@ public class PhenomController {
 		 */
 		new asyncPowerHandling().execute(GET_OPERATIONAL_MODE);
 	}
+	
+	void retrieveLiveImage(ImageView view) {
+		new RetrieveLiveImage(view).execute();
+	}
 
 	private static final String WebServiceSoapAction = "";
 	private static final String WebServiceMethodName = "GetInstrumentMode"; //GetOperationalMode
@@ -59,8 +70,10 @@ public class PhenomController {
         
         HttpTransportSE hts = new HttpTransportSE(WebServiceUrl);
         try {
+        	Log.i("bla", "Before call");
 			hts.call(WebServiceSoapAction, soapEnvelope);
-			
+        	Log.i("bla", "Aftercall");
+        	
 			Vector soapResult     = (Vector)soapEnvelope.getResponse();
 			String instrumentMode = ((SoapPrimitive)soapResult.get(0)).toString();
 
@@ -113,6 +126,96 @@ public class PhenomController {
 		@Override
 		protected void onPostExecute(Void result) {
 		}
+	}
+	
+	private class RetrieveLiveImage extends AsyncTask<Void, Void, Bitmap> {
+		
+		private ImageView imageView;
+		
+		public RetrieveLiveImage(ImageView imageView) {
+			this.imageView = imageView;
+		}
 
+		@Override
+		protected Bitmap doInBackground(Void... params) {
+	        SoapObject request = new SoapObject(WebServiceNameSpace, "SEMGetLiveImageCopy");        
+	        request.addProperty("nFramesDelay", 1);
+	        SoapSerializationEnvelope soapEnvelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);		
+	        soapEnvelope.setOutputSoapObject(request);
+	        
+	        HttpTransportSE hts = new HttpTransportSE(WebServiceUrl);
+	        
+			try {
+	        	Log.i("bla", "About to fuck off");
+				hts.call(WebServiceSoapAction, soapEnvelope);
+	        	Log.i("bla", "Aaaaand we're back!");
+				
+				Vector soapResult     = (Vector)soapEnvelope.getResponse();
+				LogSoapThingy(soapResult.get(0));
+				LogSoapThingy(soapResult.get(1));
+				LogSoapThingy(soapResult.get(2));
+				LogSoapThingy(soapResult.get(3));
+				
+				byte[] bytes = Base64.decode(soapResult.get(0).toString());
+				SoapObject properties = (SoapObject)soapResult.get(1);
+				int width = Integer.parseInt(properties.getProperty("width").toString());
+				int height = Integer.parseInt(properties.getProperty("height").toString());
+				
+				return makeBitmapFromGrayscale(bytes, width, height);				
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e);
+			} catch (XmlPullParserException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e);
+			}
+		}
+
+		@Override
+		protected void onPostExecute(Bitmap result) {
+			// Time to display that bitmap beyotches
+			if (result != null) {
+				imageView.setImageBitmap(result);
+			}
+		}
+	}
+	
+	private Bitmap makeBitmapFromGrayscale(byte[] bytes, int width, int height) {
+		// Convert to 32-bits ARGB cause Android doesn't understand 8bit grayscale
+		byte[] pixels = new byte[width * height * 4];
+		for (int i = 0, j = 0; i < width * height * 4; i += 4, j++) {
+			pixels[i] = bytes[j];
+			pixels[i + 1] = bytes[j];
+			pixels[i + 2] = bytes[j];
+			pixels[i + 3] = (byte)0xFF;
+		}
+		
+		Bitmap ret = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+		ret.copyPixelsFromBuffer(ByteBuffer.wrap(pixels));
+		return ret;
+		/*
+		BitmapFactory.Options opts = new BitmapFactory.Options();
+		opts.outWidth  = width;
+		opts.outHeight = height;
+		return BitmapFactory.decodeByteArray(pixels, 0, pixels.length, opts);
+		*/
+	}
+	
+	private void LogSoapThingy(Object o) {
+		if (o instanceof SoapPrimitive) LogSoapPrimitive((SoapPrimitive)o);
+		else if (o instanceof SoapObject) LogSoapObject((SoapObject)o);
+		else Log.w("soap", "Not a soap thingy: " + o.toString());
+	}
+	
+	private void LogSoapPrimitive(SoapPrimitive p) {
+		Log.i("soap", "SoapPrimitive " + p.getName() + ": " + p.toString());
+	}
+	
+	private void LogSoapObject(SoapObject o) {
+		Log.i("soap", "SoapObject " + o.getName() + ": " + o.toString());
+		for (int i = 0; i < o.getPropertyCount(); i++) {
+			Log.i("soap", "property " + i);
+			LogSoapThingy(o.getProperty(i));
+		}
 	}
 }
