@@ -5,7 +5,7 @@
  * should not be modified by hand.
  */
 
-package eu.sioux.phenom;
+package eu.sioux.phenomgame;
 
 public final class R {
     public static final class attr {
@@ -19,9 +19,10 @@ public final class R {
         public static final int startingbuttonimage=0x7f020005;
     }
     public static final class id {
-        public static final int getOperationalModeButton=0x7f050000;
-        public static final int getOperationalModeTextView=0x7f050001;
-        public static final int imageView=0x7f050002;
+        public static final int getOperationalModeButton=0x7f050001;
+        public static final int getOperationalModeTextView=0x7f050002;
+        public static final int imageView=0x7f050003;
+        public static final int statusLabel=0x7f050000;
     }
     public static final class layout {
         public static final int main=0x7f030000;

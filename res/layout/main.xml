@@ -4,11 +4,14 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
-<ImageView
-    android:layout_width="wrap_content" 
-    android:layout_height="wrap_content" 
-    android:src="@drawable/phenom"
-    ></ImageView>
+    <TextView
+    	android:id="@+id/statusLabel"
+	    android:layout_width="fill_parent"
+	    android:layout_height="14dip"
+	    android:textSize="10dip"
+	    android:textColor="#FF000000"
+	    android:background="#FFFFFFFF"
+	    />
 	<LinearLayout
 	   android:orientation="horizontal"
  	   android:layout_width="fill_parent"
@@ -36,6 +39,12 @@
 	    android:layout_height="wrap_content"
 	    android:text="get live image"
 	    android:onClick="clickGetLiveImage"
+	    ></Button>
+	<Button
+	    android:layout_width="wrap_content" 
+	    android:layout_height="wrap_content"
+	    android:text="acquire image"
+	    android:onClick="clickAcquireImage"
 	    ></Button>
 	<ImageView
 	    android:id="@+id/imageView"

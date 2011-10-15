@@ -1,15 +1,18 @@
-package eu.sioux.phenom;
+package eu.sioux.phenomgame;
+
+import java.util.Random;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import eu.sioux.phenomgame.PhenomController.Point;
+import eu.sioux.phenomgame.PhenomController.Stroke;
 
 public class PhenomRemoteControlActivity extends Activity {
 	/** Called when the activity is first created. */
@@ -17,6 +20,12 @@ public class PhenomRemoteControlActivity extends Activity {
 	PhenomController phenomController = null;
 	private Button mGetOperationalModeBtn = null;
 	private TextView mOperationalModeTextView = null;
+	private TextView statusLabel;
+	
+	private final int ST_STROKE = 1;
+	private final int ST_MOVED_TO_SEARCH = 2;
+	private Stroke stageStroke;
+	private Point searchPoint;
 
 	final static String TAG = PhenomController.class.getSimpleName();
 	/*
@@ -39,7 +48,8 @@ public class PhenomRemoteControlActivity extends Activity {
 		/*
 		 * the PhenomController class has been created to communicate with the Phenom
 		 */
-		phenomController = new PhenomController(mHandler);
+		statusLabel = (TextView)findViewById(R.id.statusLabel);
+		phenomController = new PhenomController(statusHandler);
 
 		/*
 		 * as we have set the layout above via setContentView, the items in that
@@ -66,47 +76,45 @@ public class PhenomRemoteControlActivity extends Activity {
 				 * this function is non-blocking. We will be receiving the status via the
 				 * handler passed to the PhenomController constructor
 				 */
-				phenomController.getOperationalMode();
+				phenomController.getInstrumentMode(mOperationalModeTextView);
 			}
 		});
 	}
 	
 	public void clickGetLiveImage(View v) {
 		ImageView i = (ImageView)findViewById(R.id.imageView);
-		phenomController.retrieveLiveImage(i);
+		phenomController.retrieveLiveImage(1, i);
 	}
 	
-	/*
-	 * this is the message handler that we passed on to the PhenomController object.
-	 * It will send messages when it has new data. It doesn't matter from which thread
-	 * the message is send, all messages will always be handled here in the same thread.
-	 * 
-	 * This is imported when changing UI. You are only allowed to change UI stuff in the
-	 * UI thread. So handling UI changes in this handler is safe as it is always being done
-	 * in the UI thread.
-	 */
-	Handler mHandler = new Handler() {
+	public void clickAcquireImage(View v) {
+		ImageView i = (ImageView)findViewById(R.id.imageView);
+		phenomController.getStroke(ST_STROKE);
+	}
+	
+	private void selectSearchPoint() {
+		Random r  = new Random();
+		double dx = stageStroke.bottomRight.x - stageStroke.topLeft.x;
+		double dy = stageStroke.bottomRight.y - stageStroke.topLeft.y;
+		searchPoint = new Point(
+				r.nextDouble() * dx + stageStroke.topLeft.x,
+				r.nextDouble() * dy + stageStroke.topLeft.y);
+	}
+	
+	Handler statusHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
-			/*
-			 * messages send via the Handler methods, like sendMessage() or sendEmptyMessage, 
-			 * will end up in this handler. The message ID can be derived from msg.what. So
-			 * here we the handle different messages.
-			 * 
-			 * Only one at the moment...
-			 */
-			if (msg.what == PhenomController.GET_OPERATIONAL_MODE_RESULT) {
-				/*
-				 * Hey! We received operational mode info, show it in the textview!
-				 */
-				String result = (String) msg.obj;
-				mOperationalModeTextView.setText(result);				
-			} else {
-				/*
-				 * check the logcat for this message in case of problems to see if you message
-				 * is being handled.
-				 */
-				Log.e(TAG, "Unhandled message from PhenomController: " + Integer.toString(msg.what));
+			switch (msg.what) {
+				case ST_STROKE:
+					stageStroke = (Stroke)msg.obj;
+					selectSearchPoint();
+					phenomController.moveTo(searchPoint, ST_MOVED_TO_SEARCH);
+					break;
+					
+				case ST_MOVED_TO_SEARCH:
+					statusLabel.setText("I moved!");
+			
+				default:
+					statusLabel.setText((String)msg.obj);
 			}
 		}
 	};
