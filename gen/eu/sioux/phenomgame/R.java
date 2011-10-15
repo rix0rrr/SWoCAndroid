@@ -19,8 +19,8 @@ public final class R {
         public static final int startingbuttonimage=0x7f020005;
     }
     public static final class id {
+        public static final int analogControl=0x7f050001;
         public static final int currentImage=0x7f050002;
-        public static final int referenceImage=0x7f050001;
         public static final int statusLabel=0x7f050000;
     }
     public static final class layout {

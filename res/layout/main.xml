@@ -18,7 +18,7 @@
  	   android:layout_height="150dip">
 		<LinearLayout
 		   android:orientation="vertical"
-	 	   android:layout_width="fill_parent"
+	 	   android:layout_width="wrap_content"
 	 	   android:layout_height="fill_parent">
 			<Button
 			    android:layout_width="wrap_content" 
@@ -31,41 +31,21 @@
 			    android:layout_height="wrap_content"
 			    android:onClick="refreshClick" />
 	    </LinearLayout>
+	    <!-- 
 		<ImageView
 			android:id="@+id/referenceImage"
 		    android:layout_width="fill_parent" 
 		    android:layout_height="fill_parent"
-			/>
+			/> -->
+		<nl.mvdvlist.test.Analog2dController 
+		    android:id="@+id/analogControl"
+		    android:layout_width="fill_parent" 
+		    android:layout_height="fill_parent"
+		    />
 	</LinearLayout>
-	<TableLayout
+	<ImageView
+	    android:id="@+id/currentImage"
 	    android:layout_width="fill_parent"
-	    android:layout_height="fill_parent">
-		<TableRow>
-			<Button android:layout_column="1" android:text="^" 
-				android:layout_width="fill_parent" 
-				android:layout_height="30dip" 
-				android:textSize="12dip"
-				android:onClick="moveUpClick" 
-				/>
-		</TableRow>
-		<TableRow>
-			<Button android:text="&lt;" android:layout_height="fill_parent" 
-				android:onClick="moveLeftClick" 
-				/>
-			<ImageView
-			    android:id="@+id/currentImage"
-			    android:layout_width="250dip"
-			    android:layout_height="250dip"
-			    />
-			<Button android:text="&gt;" android:layout_height="fill_parent" 
-				android:onClick="moveRightClick" 
-				/>
-		</TableRow>
-		<TableRow>
-			<Button android:layout_column="1" android:text="v" android:layout_width="fill_parent" android:textSize="12dip" 
-				android:layout_height="30dip" 
-			android:onClick="moveDownClick" 
-			/>
-		</TableRow>
-	</TableLayout>
+	    android:layout_height="fill_parent"
+	    />
 </LinearLayout>

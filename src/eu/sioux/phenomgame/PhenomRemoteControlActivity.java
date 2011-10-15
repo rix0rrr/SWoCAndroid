@@ -2,6 +2,9 @@ package eu.sioux.phenomgame;
 
 import java.util.Random;
 
+import nl.mvdvlist.test.Analog2dController;
+import nl.mvdvlist.test.AnalogControlListener;
+
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -63,7 +66,15 @@ public class PhenomRemoteControlActivity extends Activity {
 		 */
 		statusLabel    = (TextView)findViewById(R.id.statusLabel);
 		currentImage   = (ImageView)findViewById(R.id.currentImage);
-		referenceImage = (ImageView)findViewById(R.id.referenceImage);
+//		referenceImage = (ImageView)findViewById(R.id.referenceImage);
+		
+		Analog2dController analog = (Analog2dController)findViewById(R.id.analogControl);
+		analog.addListener(new AnalogControlListener() {
+			@Override
+			public void onPositionChanged(double currentAngle, double currentStrength) {
+								
+			}
+		});
 
 		phenomController = new PhenomController(statusHandler);
 	}
@@ -135,7 +146,7 @@ public class PhenomRemoteControlActivity extends Activity {
 					break;
 					
 				case ST_HIDDEN_PIC_CAPPED:
-					referenceImage.setImageBitmap((Bitmap)msg.obj);
+					//referenceImage.setImageBitmap((Bitmap)msg.obj);
 					phenomController.moveTo(randomPoint(), ST_HIDING);
 					break;
 					

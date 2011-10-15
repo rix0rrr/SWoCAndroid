@@ -219,6 +219,46 @@ public class PhenomController {
 		}.execute();
 	}
 	
+	public void setJog(final double vx, final double vy, final boolean siUnit, final int nextStep) {
+		new AsyncTask<Void, Void, Void>() {
+			@Override
+			protected Void doInBackground(Void... params) {
+				performSoapRequest("Jog", new HashMap<String, Object>() {{
+					put("aSpeed", new SoapObject(PHENOM_NS, "jogVector") {{
+						addProperty("x", new Double(vx));
+						addProperty("y", new Double(vy));
+					}});
+					put("aSIPercFoV", new Boolean(siUnit));
+				}});
+				
+				return null;
+			}
+			
+			@Override
+			protected void onPostExecute(Void result) {
+				postback(nextStep, null);
+			}
+		}.execute();
+	}
+	
+	public void getPosition(final int nextStep) {
+		new AsyncTask<Void, Void, Point>() {
+			@Override
+			protected Point doInBackground(Void... params) {
+				Vector result = (Vector)performSoapRequest("GetStageModeAndPosition", new HashMap<String, Object>());
+				
+				SoapObject pos = (SoapObject)result.get(1);
+				
+				return soapPoint(pos);
+			}
+			
+			@Override
+			protected void onPostExecute(Point result) {
+				postback(nextStep, result);
+			}
+		}.execute();		
+	}
+	
 	private String envelopeToString(SoapEnvelope envelope) {
 		StringWriter sw = new StringWriter();
 

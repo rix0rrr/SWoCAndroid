@@ -74,15 +74,15 @@ public class Analog2dController extends View {
 		//TODO get 5px offset to draw ball outside border
 		super.onDraw(canvas);
 		//canvas.drawCircle(circleCenterX, circleCenterY, controlSize, outerBorderPaint);
-		canvas.drawPath(outerBorderPath, outerBorderPaint);
+		//canvas.drawPath(outerBorderPath, outerBorderPaint);
 		
 		canvas.drawLine(dotPositionX+controlCenterX, dotPositionY+controlCenterY, controlCenterX, controlCenterY, outerBorderPaint);
 		canvas.drawCircle(dotPositionX+controlCenterX, dotPositionY+controlCenterY, DOTRADIUS, dotPaint);
 		
-		String debug = String.format("angle: %1.3f", currentAngle);
-		String debug2 = String.format("strength: %1.3f", currentStrength);
-		canvas.drawText(debug, 0, 10, dotPaint);
-		canvas.drawText(debug2, 0, 25, dotPaint);
+		//String debug = String.format("angle: %1.3f", currentAngle);
+		//String debug2 = String.format("strength: %1.3f", currentStrength);
+		//canvas.drawText(debug, 0, 10, dotPaint);
+		//canvas.drawText(debug2, 0, 25, dotPaint);
 	}
 	
 	private void updateDotPosition(float touchX, float touchY)	{
