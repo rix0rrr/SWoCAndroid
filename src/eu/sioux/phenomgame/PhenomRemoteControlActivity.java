@@ -5,13 +5,13 @@ import java.util.Random;
 import nl.mvdvlist.test.Analog2dController;
 import nl.mvdvlist.test.AnalogControlListener;
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import eu.sioux.phenomgame.PhenomController.Point;
@@ -23,11 +23,8 @@ public class PhenomRemoteControlActivity extends Activity {
 	private final double maxSpeed = 0.01;
 
 	PhenomController phenomController = null;
-	private Button mGetOperationalModeBtn = null;
-	private TextView mOperationalModeTextView = null;
 	private TextView statusLabel;
 	private ImageView currentImage;
-	private ImageView referenceImage;
 	
 	private final int ST_STROKE = 1;
 	private final int ST_MOVING = 2;
@@ -81,7 +78,7 @@ public class PhenomRemoteControlActivity extends Activity {
 			}
 		});
 
-		phenomController = new PhenomController(statusHandler);
+		phenomController = new PhenomController(statusHandler, this);
 	}
 	
 	public void startLive() {
@@ -102,6 +99,10 @@ public class PhenomRemoteControlActivity extends Activity {
 	public void refreshClick(View v) {
 		// Begin with getting the Stroke, the state machine inside the handler does the rest
 		phenomController.retrieveLiveImage(1, ST_DISPLAY_IMAGE);
+	}
+	
+	public void settingsClick(View v) {
+		startActivity(new Intent(this, Preferences.class));
 	}
 	
 	/**

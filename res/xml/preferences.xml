@@ -1,0 +1,11 @@
+<PreferenceScreen
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:key="first_preferencescreen">
+    <EditTextPreference
+            android:key="ip"
+            android:title="IP Address" />
+    <EditTextPreference
+            android:key="port"
+            android:title="Port nr" 
+            android:numeric="integer" />
+</PreferenceScreen> 

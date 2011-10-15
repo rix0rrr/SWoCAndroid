@@ -18,8 +18,8 @@ import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 import org.xmlpull.v1.XmlSerializer;
 
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.media.MediaRecorder.OutputFormat;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
@@ -34,6 +34,7 @@ import android.widget.TextView;
 public class PhenomController {
 
 	String TAG = PhenomController.class.getSimpleName();
+	private Context myContext = null; 
 	
 	/*
 	 * these static ints (constants) are being used by the message handler
@@ -42,23 +43,27 @@ public class PhenomController {
 	public final static int GET_OPERATIONAL_MODE_RESULT = 1;
 
 	private static final String WebServiceSoapAction = "";
-	private static final String WebServiceMethodName = "GetInstrumentMode"; //GetOperationalMode
 	private static final String WebServiceNameSpace  = "http://tempuri.org/om.xsd";
-	private static final String WebServiceUrl        = "http://192.168.24.25:8888/";			
 
 	private static String PHENOM_NS = "http://tempuri.org/om.xsd";
 
 	Handler statusHandler;
 	
-	public PhenomController(Handler statusHandler) {
+	public PhenomController(Handler statusHandler, Context context) {
 		this.statusHandler = statusHandler;
+		this.myContext = context;
 	}
 
 	void retrieveLiveImage(final int nFrameDelay, final int nextState) {
 		new AsyncTask<Void, Void, Bitmap>() {
 			@Override
 			protected Bitmap doInBackground(final Void... params) {
-				Map<String, Object> p = new HashMap<String, Object>() {{
+				Map<String, Object> p = new HashMap<String, Object>() {/**
+					 * 
+					 */
+					private static final long serialVersionUID = -5464869152192426657L;
+
+				{
 					put("nFrameDelay", new Integer(nFrameDelay));
 				}};
 				
@@ -90,7 +95,12 @@ public class PhenomController {
 
 			@Override
 			protected Bitmap doInBackground(Void... arg0) {
-				Map<String, Object> request = new HashMap<String, Object>() {{
+				Map<String, Object> request = new HashMap<String, Object>() {/**
+					 * 
+					 */
+					private static final long serialVersionUID = 380923659616114021L;
+
+				{
 					put("scan", new SoapObject(PHENOM_NS, "scanParams") {{
 						put("det", detector);
 						put("res", new SoapObject(PHENOM_NS, "resolution") {{
@@ -178,7 +188,12 @@ public class PhenomController {
 		new AsyncTask<Void, Void, Void>() {
 			@Override
 			protected Void doInBackground(Void... params) {
-				performSoapRequest("MoveTo", new HashMap<String, Object>() {{
+				performSoapRequest("MoveTo", new HashMap<String, Object>() {/**
+					 * 
+					 */
+					private static final long serialVersionUID = 4713190186170209628L;
+
+				{
 					put("aPos", new SoapObject(PHENOM_NS, "position") {{
 						addProperty("x", new Double(point.x));
 						addProperty("y", new Double(point.y));
@@ -200,7 +215,12 @@ public class PhenomController {
 		new AsyncTask<Void, Void, Void>() {
 			@Override
 			protected Void doInBackground(Void... params) {
-				performSoapRequest("MoveBy", new HashMap<String, Object>() {{
+				performSoapRequest("MoveBy", new HashMap<String, Object>() {/**
+					 * 
+					 */
+					private static final long serialVersionUID = -5650682529713266773L;
+
+				{
 					put("aPos", new SoapObject(PHENOM_NS, "position") {{
 						addProperty("x", new Double(delta.x));
 						addProperty("y", new Double(delta.y));
@@ -223,7 +243,12 @@ public class PhenomController {
 		new AsyncTask<Void, Void, Void>() {
 			@Override
 			protected Void doInBackground(Void... params) {
-				performSoapRequest("Jog", new HashMap<String, Object>() {{
+				performSoapRequest("Jog", new HashMap<String, Object>() {/**
+					 * 
+					 */
+					private static final long serialVersionUID = 711258811238765656L;
+
+				{
 					put("aSpeed", new SoapObject(PHENOM_NS, "jogVector") {{
 						addProperty("x", new Double(vx));
 						addProperty("y", new Double(vy));
@@ -326,7 +351,8 @@ public class PhenomController {
         
         logLongString(envelopeToString(soapEnvelope));
         
-        HttpTransportSE hts = new HttpTransportSE(WebServiceUrl);
+        String url = "http://" +Preferences.getIpAddress(myContext) + ":" + Preferences.getPortNumber(myContext);
+        HttpTransportSE hts = new HttpTransportSE(url);
 		try {
 	        Log.i("soap", "Performing call to function: " + method);
 	        setStatus("Poking the Phenom...");
@@ -338,11 +364,13 @@ public class PhenomController {
 		} catch (IOException e1) {
 			setStatus(e1.toString());
 			Log.e("soap", "Call failed", e1);
-			throw new RuntimeException(e1);
+			//throw new RuntimeException(e1);
+			return null;
 		} catch (XmlPullParserException e2) {
 			setStatus(e2.toString());
 			Log.e("soap", "Call failed", e2);
-			throw new RuntimeException(e2);
+			return null;
+			//throw new RuntimeException(e2);
 		}
 	}
 	
