@@ -19,7 +19,7 @@ public enum NavigationAlgorithm {
 	    public Object readInstance(XmlPullParser parser, String namespace, String name, 
 	            PropertyInfo expected) throws IOException, XmlPullParserException {
 	        
-	    	String txt = parser.nextText();
+	    	String txt = parser.nextText().intern();
 	    	if (txt == "NAVIGATION-AUTO") return NavigationAlgorithm.Auto;
 	    	if (txt == "NAVIGATION-BACKLASH-ONLY") return NavigationAlgorithm.BacklashOnly;
 	    	if (txt == "NAVIGATION-RAW") return NavigationAlgorithm.Raw;
