@@ -43,7 +43,7 @@
 	<Button
 	    android:layout_width="wrap_content" 
 	    android:layout_height="wrap_content"
-	    android:text="acquire image"
+	    android:text="random position"
 	    android:onClick="clickAcquireImage"
 	    ></Button>
 	<ImageView
