@@ -4,12 +4,12 @@ import java.util.Random;
 
 import nl.mvdvlist.test.Analog2dController;
 import nl.mvdvlist.test.AnalogControlListener;
-
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -20,7 +20,7 @@ import eu.sioux.phenomgame.PhenomController.Stroke;
 public class PhenomRemoteControlActivity extends Activity {
 	/** Called when the activity is first created. */
 	
-	private final double stepSize = 1E-4;
+	private final double maxSpeed = 0.01;
 
 	PhenomController phenomController = null;
 	private Button mGetOperationalModeBtn = null;
@@ -71,8 +71,13 @@ public class PhenomRemoteControlActivity extends Activity {
 		Analog2dController analog = (Analog2dController)findViewById(R.id.analogControl);
 		analog.addListener(new AnalogControlListener() {
 			@Override
-			public void onPositionChanged(double currentAngle, double currentStrength) {
-								
+			public void onPositionChanged(double fx, double fy) {
+				if (Math.abs(fx) < 0.001 && Math.abs(fy) < 0.001)
+					phenomController.stop(-1);
+				else {
+					Log.i("poschange", fx + "," + fy);
+					phenomController.setJog(fx * maxSpeed, -fy * maxSpeed, false, -1);
+				}
 			}
 		});
 
@@ -99,22 +104,6 @@ public class PhenomRemoteControlActivity extends Activity {
 		phenomController.retrieveLiveImage(1, ST_DISPLAY_IMAGE);
 	}
 	
-	public void moveUpClick(View v) {
-		phenomController.moveBy(new Point(0, stepSize), ST_SMALLSTEP);
-	}
-	
-	public void moveLeftClick(View v) {
-		phenomController.moveBy(new Point(-stepSize, 0), ST_SMALLSTEP);
-	}
-	
-	public void moveRightClick(View v) {
-		phenomController.moveBy(new Point(stepSize, 0), ST_SMALLSTEP);
-	}
-	
-	public void moveDownClick(View v) {
-		phenomController.moveBy(new Point(0, -stepSize), ST_SMALLSTEP);
-	}
-
 	/**
 	 * Pick a random point in the current stroke
 	 */
@@ -170,9 +159,8 @@ public class PhenomRemoteControlActivity extends Activity {
 					currentImage.setImageBitmap((Bitmap)msg.obj);
 					if (live) phenomController.retrieveLiveImage(1, ST_LIVE);
 					break;
-				
 			
-				default:
+				case 0:
 					statusLabel.setText((String)msg.obj);
 			}
 		}

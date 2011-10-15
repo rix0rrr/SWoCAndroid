@@ -241,6 +241,21 @@ public class PhenomController {
 		}.execute();
 	}
 	
+	public void stop(final int nextStep) {
+		new AsyncTask<Void, Void, Void>() {
+			@Override
+			protected Void doInBackground(Void... params) {
+				performSoapRequest("Stop", new HashMap<String, Object>());
+				return null;
+			}
+			
+			@Override
+			protected void onPostExecute(Void result) {
+				postback(nextStep, result);
+			}
+		}.execute();		
+	}
+	
 	public void getPosition(final int nextStep) {
 		new AsyncTask<Void, Void, Point>() {
 			@Override
